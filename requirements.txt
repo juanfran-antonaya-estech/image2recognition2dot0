@@ -1,0 +1,6 @@
+# requirements.txt
+requests
+Pillow
+transformers
+torch
+dotenv
