@@ -1,4 +1,5 @@
 # requirements.txt
+timm
 requests
 Pillow
 transformers
