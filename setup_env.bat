@@ -4,4 +4,5 @@ python -m venv venv
 call venv\Scripts\activate
 pip install --upgrade pip
 pip install -r requirements.txt
-@echo Entorno virtual configurado y dependencias instaladas.
+python prepare_models.py
+@echo Entorno virtual configurado, dependencias instaladas y modelos preparados.

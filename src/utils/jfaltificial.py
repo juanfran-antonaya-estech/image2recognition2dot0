@@ -3,8 +3,9 @@ from PIL import Image
 import torch
 
 def process_image_with_ai(image_path):
-    processor = DetrImageProcessor.from_pretrained("facebook/detr-resnet-50")
-    model = DetrForObjectDetection.from_pretrained("facebook/detr-resnet-50")
+    # Cargar los modelos desde la carpeta local relativa a este archivo
+    processor = DetrImageProcessor.from_pretrained("../models/detr-resnet-50-processor")
+    model = DetrForObjectDetection.from_pretrained("../models/detr-resnet-50-model")
 
     image = Image.open(image_path).convert("RGB")
     inputs = processor(images=image, return_tensors="pt")

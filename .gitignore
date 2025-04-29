@@ -30,3 +30,5 @@ __pycache__/
 *.pdm.toml
 *.pdm.lock
 *.venv/
+# Ignorar la carpeta de modelos descargados
+src/models/
