@@ -1,25 +1,44 @@
+import os
+import logging
 from transformers import DetrImageProcessor, DetrForObjectDetection
 from PIL import Image
 import torch
 
+# Configurar logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def process_image_with_ai(image_path):
-    # Cargar los modelos desde la carpeta local relativa a este archivo
-    processor = DetrImageProcessor.from_pretrained("../models/detr-resnet-50-processor")
-    model = DetrForObjectDetection.from_pretrained("../models/detr-resnet-50-model")
+    is_dev = os.getenv("ENV") == "dev"
 
-    image = Image.open(image_path).convert("RGB")
-    inputs = processor(images=image, return_tensors="pt")
+    try:
+        if is_dev:
+            logger.debug(f"Procesando imagen con IA: {image_path}")
 
-    outputs = model(**inputs)
-    target_sizes = torch.tensor([image.size[::-1]])
-    results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=0.9)[0]
+        # Cargar los modelos desde la carpeta local relativa a este archivo
+        processor = DetrImageProcessor.from_pretrained("../models/detr-resnet-50-processor")
+        model = DetrForObjectDetection.from_pretrained("../models/detr-resnet-50-model")
 
-    detections = []
-    for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
-        detections.append({
-            "score": score.item(),
-            "label": model.config.id2label[label.item()],
-            "box": box.tolist()
-        })
+        image = Image.open(image_path).convert("RGB")
+        inputs = processor(images=image, return_tensors="pt")
 
-    return detections
+        outputs = model(**inputs)
+        target_sizes = torch.tensor([image.size[::-1]])
+        results = processor.post_process_object_detection(outputs, target_sizes=target_sizes, threshold=0.9)[0]
+
+        detections = []
+        for score, label, box in zip(results["scores"], results["labels"], results["boxes"]):
+            detections.append({
+                "score": score.item(),
+                "label": model.config.id2label[label.item()],
+                "box": box.tolist()
+            })
+
+        if is_dev:
+            logger.debug(f"Detecciones realizadas: {detections}")
+
+        return detections
+    except Exception as e:
+        if is_dev:
+            logger.error(f"Error al procesar la imagen con IA: {e}")
+        raise
