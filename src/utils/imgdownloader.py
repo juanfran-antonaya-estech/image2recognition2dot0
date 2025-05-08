@@ -13,7 +13,7 @@ def download_image(url, output_path):
         if is_dev:
             logger.debug(f"Iniciando descarga de imagen desde URL: {url}")
 
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=10)
         if response.status_code == 200:
             with open(output_path, 'wb') as file:
                 for chunk in response.iter_content(1024):

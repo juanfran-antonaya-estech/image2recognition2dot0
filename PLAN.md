@@ -109,3 +109,5 @@ tras realizar el proceso completo, la aplicación debe solar un true o un false 
 
 ### Observaciones
 - ...
+### Cosas a mejorar
+- Se queda atascado en una conexión con el servidor

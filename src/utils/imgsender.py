@@ -1,10 +1,24 @@
 import os
 import requests
 import logging
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 # Configurar logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Configure retry strategy
+retry_strategy = Retry(
+    total=3,
+    backoff_factor=1,
+    status_forcelist=[429, 500, 502, 503, 504],
+    method_whitelist=["HEAD", "GET", "OPTIONS", "POST"]
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+session = requests.Session()
+session.mount("https://", adapter)
+session.mount("http://", adapter)
 
 def authenticate_and_send_images(modified_image_path, sub_images, image_id, login_url, upload_url, credentials):
     is_dev = os.getenv("ENV") == "dev"
@@ -14,7 +28,7 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
             logger.debug("Iniciando autenticación...")
 
         # Autenticación
-        auth_response = requests.post(login_url, json=credentials)
+        auth_response = session.post(login_url, json=credentials, timeout=10)
         if auth_response.status_code != 200:
             error_message = "Error al autenticar"
             if is_dev:
@@ -29,7 +43,7 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
 
         # Enviar imagen modificada
         with open(modified_image_path, "rb") as img_file:
-            response = requests.post(upload_url, headers=headers, files={"image": img_file}, data={"id": image_id})
+            response = session.post(upload_url, headers=headers, files={"image": img_file}, data={"id": image_id}, timeout=10)
             if response.status_code != 200:
                 error_message = "Error al enviar la imagen modificada"
                 if is_dev:
@@ -42,7 +56,7 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
         # Enviar subimágenes
         for sub_image, label, score in sub_images:
             with open(sub_image, "rb") as img_file:
-                response = requests.post(upload_url, headers=headers, files={"image": img_file}, data={"id": image_id, "objeto": label, "seguridad": score})
+                response = session.post(upload_url, headers=headers, files={"image": img_file}, data={"id": image_id, "objeto": label, "seguridad": score}, timeout=10)
                 if response.status_code != 200:
                     error_message = f"Error al enviar una subimagen: {sub_image}"
                     if is_dev:
