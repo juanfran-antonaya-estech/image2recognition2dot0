@@ -44,62 +44,57 @@ def main():
     try:
         # Obtener argumentos
         url, image_id, mode = get_arguments()
+        print(f"Argumentos obtenidos: url={url}, image_id={image_id}, mode={mode}")
 
         # Descargar imagen
         image_path = f"temp_image_{image_id}.jpg"
         download_image(url, image_path)
+        print(f"Imagen descargada en: {image_path}")
 
         # Procesar imagen con IA
         detections = process_image_with_ai(image_path)
+        print(f"Detecciones obtenidas: {detections}")
 
         # Tratar imagen
         modified_image, sub_images = treat_image(image_path, detections)
+        print(f"Imagen tratada. Subimágenes generadas: {len(sub_images)}")
         modified_image_path = f"modified_image_{image_id}.png"
         modified_image.save(modified_image_path)
+        print(f"Imagen modificada guardada en: {modified_image_path}")
 
         # Guardar subimágenes en archivos temporales con nombres únicos
-        # Depuración: Verificar la creación y existencia de archivos
         temp_sub_images = []
         for idx, (sub_image, label, score) in enumerate(sub_images):
             if isinstance(sub_image, Image.Image):
                 temp_sub_image_path = f"temp_sub_image_{image_id}_{label}_{idx}.png"
                 sub_image.save(temp_sub_image_path)
                 if os.path.exists(temp_sub_image_path):
-                    logger.debug(f"Archivo creado exitosamente: {temp_sub_image_path}")
+                    print(f"Archivo creado exitosamente: {temp_sub_image_path}")
                 else:
-                    logger.error(f"Fallo en la creación del archivo: {temp_sub_image_path}")
+                    print(f"Fallo en la creación del archivo: {temp_sub_image_path}")
                 temp_sub_images.append((temp_sub_image_path, label, score))
             else:
+                print(f"Subimagen no es una instancia de Image.Image: {sub_image}")
                 temp_sub_images.append((sub_image, label, score))
 
         # Enviar datos al backend
         credentials = {"email": EMAIL, "password": PASSWORD}
+        print(f"Credenciales preparadas para autenticación: {credentials}")
         authenticate_and_send_images(modified_image_path, temp_sub_images, image_id, LOGIN_URL, UPLOAD_URL, credentials)
 
         # Asegurarse de que la limpieza ocurra solo después de que todas las operaciones se completen
-        try:
-            # Enviar subimágenes
-            for temp_sub_image_path, label, score in temp_sub_images:
-                with open(temp_sub_image_path, "rb") as img_file:
-                    response = requests.post(SUBIMAGE_UPLOAD_URL, headers=headers, files={"image": img_file}, data={"id": image_id, "objeto": label, "seguridad": score})
-                    if response.status_code != 200:
-                        raise Exception("Error al enviar una subimagen")
-        finally:
-            # Limpiar archivos temporales de subimágenes
-            for temp_sub_image_path, _, _ in temp_sub_images:
-                if os.path.exists(temp_sub_image_path):
-                    os.remove(temp_sub_image_path)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+            print(f"Archivo temporal eliminado: {image_path}")
+        if os.path.exists(modified_image_path):
+            os.remove(modified_image_path)
+            print(f"Archivo temporal eliminado: {modified_image_path}")
 
-            # Limpiar archivos temporales
-            if os.path.exists(image_path):
-                os.remove(image_path)
-            if os.path.exists(modified_image_path):
-                os.remove(modified_image_path)
-
-        print(True)
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error en el flujo principal: {e}")
         print(False)
+    finally:
+        print(True)
 
 if __name__ == "__main__":
     main()
