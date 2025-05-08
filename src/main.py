@@ -80,7 +80,7 @@ def main():
         # Enviar datos al backend
         credentials = {"email": EMAIL, "password": PASSWORD}
         print(f"Credenciales preparadas para autenticación: {credentials}")
-        authenticate_and_send_images(modified_image_path, temp_sub_images, image_id, LOGIN_URL, UPLOAD_URL, credentials)
+        authenticate_and_send_images(modified_image_path, temp_sub_images, image_id, LOGIN_URL, UPLOAD_URL, SUBIMAGE_UPLOAD_URL, credentials)
 
         # Asegurarse de que la limpieza ocurra solo después de que todas las operaciones se completen
         if os.path.exists(image_path):

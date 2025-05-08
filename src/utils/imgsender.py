@@ -3,7 +3,7 @@ import requests
 import logging
 import time
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 from PIL import Image
 
 # Configurar el registro de mensajes
@@ -22,7 +22,7 @@ session = requests.Session()
 session.mount("https://", adapter)
 session.mount("http://", adapter)
 
-def authenticate_and_send_images(modified_image_path, sub_images, image_id, login_url, upload_url, credentials):
+def authenticate_and_send_images(modified_image_path, sub_images, image_id, login_url, upload_url, subim_upload_url, credentials):
     is_dev = os.getenv("ENV") == "dev"
 
     try:
@@ -96,9 +96,13 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
         # Enviar subimágenes y eliminar después de un envío exitoso
         for sub_image, label, score in sub_images:
             with open(sub_image, "rb") as img_file:
-                response = session.post(upload_url, headers=headers, files={"image": img_file}, data={"id": image_id, "objeto": label, "seguridad": score}, timeout=10)
+                if is_dev:
+                    logger.debug(f"Payload enviado: id={image_id}, objeto={label}, seguridad={score}")
+
+                response = session.post(subim_upload_url, headers=headers, files={"image": img_file}, data={"id": image_id, "objeto": label, "seguridad": score}, timeout=10)
+
                 if response.status_code != 200:
-                    error_message = f"Error al enviar una subimagen: {sub_image}"
+                    error_message = f"Error al enviar una subimagen: {sub_image}, Código de estado: {response.status_code}, Respuesta: {response.text}"
                     if is_dev:
                         logger.error(error_message)
                     raise Exception(error_message)
