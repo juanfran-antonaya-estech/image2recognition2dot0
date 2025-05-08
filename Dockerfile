@@ -1,27 +1,24 @@
-# Use an official Python runtime as a parent image
 FROM python:3.8-slim
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+COPY requirements.txt setup_env.sh ./
 
-# Make the setup_env.sh script executable
-RUN chmod +x setup_env.sh
-
-# Run the setup_env.sh script to prepare the environment
-RUN ./setup_env.sh
-
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir --upgrade pip \
+# Install virtualenv and create a virtual environment
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir --upgrade pip virtualenv \
+    && virtualenv venv \
+    && . venv/bin/activate \
     && pip install --no-cache-dir -r requirements.txt
 
-# Expose port 5000 for communication (if needed)
+COPY . .
+
+RUN chmod +x setup_env.sh && ./setup_env.sh
+
 EXPOSE 5000
 
-# Set environment variables
-ENV ENV=production
+ENV ENV=dev
 
-# Command to run the application with runtime arguments
-ENTRYPOINT ["python", "src/main.py"]
+# Use the virtual environment to run the application
+ENTRYPOINT ["/bin/bash", "-c", "source venv/bin/activate && exec python src/main.py \"$@\"", "--"]
+

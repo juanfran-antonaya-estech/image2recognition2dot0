@@ -15,9 +15,14 @@ def process_image_with_ai(image_path):
         if is_dev:
             logger.debug(f"Procesando imagen con IA: {image_path}")
 
-        # Cargar los modelos desde la carpeta local relativa a este archivo
-        processor = DetrImageProcessor.from_pretrained("../models/detr-resnet-50-processor")
-        model = DetrForObjectDetection.from_pretrained("../models/detr-resnet-50-model")
+        # Definir rutas absolutas para los modelos
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        PROCESSOR_PATH = os.path.join(BASE_DIR, "..", "models", "detr-resnet-50-processor")
+        MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "detr-resnet-50-model")
+
+        # Cargar los modelos desde las rutas absolutas
+        processor = DetrImageProcessor.from_pretrained(PROCESSOR_PATH)
+        model = DetrForObjectDetection.from_pretrained(MODEL_PATH)
 
         image = Image.open(image_path).convert("RGB")
         inputs = processor(images=image, return_tensors="pt")

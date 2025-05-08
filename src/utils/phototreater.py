@@ -2,7 +2,7 @@ import logging
 import os
 from PIL import Image, ImageDraw
 
-# Configurar logging
+# Configurar el registro de mensajes
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -18,6 +18,9 @@ def treat_image(image_path, detections):
 
         sub_images = []
         for detection in detections:
+            if is_dev:
+                logger.debug(f"Procesando detección: {detection}")
+
             box = detection["box"]
             label = detection["label"]
             score = detection["score"]
@@ -29,6 +32,9 @@ def treat_image(image_path, detections):
             # Crear subimágenes
             cropped_image = image.crop(box)
             sub_images.append((cropped_image, label, score))
+
+            if is_dev:
+                logger.debug(f"Subimagen creada: {cropped_image}, Etiqueta: {label}, Puntaje: {score}")
 
         if is_dev:
             logger.debug(f"Imagen tratada y subimágenes generadas: {len(sub_images)} subimágenes")

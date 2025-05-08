@@ -2,12 +2,14 @@ import sys
 import os
 import logging
 
-# Configurar logging
+# Configurar el registro de mensajes
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def get_arguments():
+    # Recoger argumentos pasados por la línea de comandos
     is_dev = os.getenv("ENV") == "dev"
+    is_container = os.path.exists("/.dockerenv")  # Comprobar si se está ejecutando dentro de un contenedor
 
     if len(sys.argv) != 4:
         error_message = "Se requieren exactamente 3 argumentos: URL, ID y modo (crear | editar)"
@@ -16,6 +18,10 @@ def get_arguments():
         raise ValueError(error_message)
 
     url = sys.argv[1]
+    # Reemplazar 127.0.0.1 con host.docker.internal solo si se ejecuta dentro de un contenedor
+    if is_container and "127.0.0.1" in url:
+        url = url.replace("127.0.0.1", "host.docker.internal")
+
     try:
         image_id = int(sys.argv[2])
     except ValueError:
