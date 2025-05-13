@@ -1,10 +1,9 @@
 # .gitignore
-.env
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-.Python
 *.sqlite3
 *.log
 *.pot
@@ -13,25 +12,68 @@ __pycache__/
 *.swo
 *.DS_Store
 *.egg-info/
-.envrc
-.vscode/
-.idea/
 *.bak
 *.tmp
 *.old
 *.orig
 *.rej
-*.sublime-workspace
-*.sublime-project
 *.coverage
 *.tox/
 *.pytest_cache/
 *.mypy_cache/
-*.pdm.toml
-*.pdm.lock
 *.venv/
-# Ignorar la carpeta de modelos descargados
-src/models/
+
+# Environment variables
+.env
+.envrc
+venv/*
+venv
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.pid
+*.seed
+*.bak
+
+# Images
 *.jpg
-*.png
 *.jpeg
+*.png
+
+# Models
+src/models/
+
+# Node.js
+node_modules/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
