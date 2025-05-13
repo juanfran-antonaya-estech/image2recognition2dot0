@@ -13,8 +13,12 @@ def treat_image(image_path, detections):
         if is_dev:
             logger.debug(f"Tratando imagen: {image_path} con detecciones: {detections}")
 
+        # Abrir la imagen original
         image = Image.open(image_path).convert("RGB")
         draw = ImageDraw.Draw(image)
+
+        # Crear una copia de la imagen original para los recortes
+        original_image = image.copy()
 
         sub_images = []
         for detection in detections:
@@ -25,12 +29,12 @@ def treat_image(image_path, detections):
             label = detection["label"]
             score = detection["score"]
 
-            # Dibujar rectángulos
+            # Dibujar rectángulos y textos en la imagen modificada
             draw.rectangle(box, outline="red", width=3)
             draw.text((box[0], box[1]), f"{label} ({score:.2f})", fill="red")
 
-            # Crear subimágenes
-            cropped_image = image.crop(box)
+            # Crear subimágenes a partir de la copia de la imagen original
+            cropped_image = original_image.crop(box)
             sub_images.append((cropped_image, label, score))
 
             if is_dev:

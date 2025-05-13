@@ -41,7 +41,7 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
             logger.debug(f"Encabezados de solicitud: {auth_headers}")
 
         # Autenticación
-        auth_response = session.post(login_url, json=credentials, headers=auth_headers, timeout=10)
+        auth_response = session.post(login_url, json=credentials, headers=auth_headers, timeout=300)
 
         if is_dev:
             logger.debug(f"Código de estado de respuesta: {auth_response.status_code}")
@@ -83,11 +83,20 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
 
         # Enviar imagen modificada
         with open(modified_image_path, "rb") as img_file:
-            response = session.post(upload_url, headers=headers, files={"image": img_file}, data={"id": image_id}, timeout=10)
+            if is_dev:
+                logger.debug(f"Enviando imagen modificada: id={image_id}")
+            response = session.post(
+                upload_url,
+                headers=headers,
+                files={"image": img_file},
+                data={"id": image_id},
+                timeout=300
+            )
             if response.status_code != 200:
                 error_message = "Error al enviar la imagen modificada"
                 if is_dev:
                     logger.error(error_message)
+                    logger.error(f"Cuerpo de respuesta: {response.text}")
                 raise Exception(error_message)
 
         if is_dev:
@@ -98,15 +107,19 @@ def authenticate_and_send_images(modified_image_path, sub_images, image_id, logi
             with open(sub_image, "rb") as img_file:
                 if is_dev:
                     logger.debug(f"Payload enviado: id={image_id}, objeto={label}, seguridad={score}")
-
-                response = session.post(subim_upload_url, headers=headers, files={"image": img_file}, data={"id": image_id, "objeto": label, "seguridad": score}, timeout=10)
-
+                response = session.post(
+                    subim_upload_url,
+                    headers=headers,
+                    files={"image": img_file},
+                    data={"id": image_id, "objeto": label, "seguridad": score},
+                    timeout=300
+                )
                 if response.status_code != 200:
-                    error_message = f"Error al enviar una subimagen: {sub_image}, Código de estado: {response.status_code}, Respuesta: {response.text}"
+                    error_message = "Error al enviar la subimagen"
                     if is_dev:
                         logger.error(error_message)
+                        logger.error(f"Cuerpo de respuesta: {response.text}")
                     raise Exception(error_message)
-
                 if is_dev:
                     logger.debug(f"Subimagen enviada correctamente: {sub_image}")
 
